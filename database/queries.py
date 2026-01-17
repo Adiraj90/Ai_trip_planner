@@ -247,6 +247,59 @@ def update_user_profile(user_id: int, full_name: str = None, email: str = None, 
     except Exception as e:
         logger.error(f"Error updating user: {e}")
         return False
+    
+def update_user_profile_with_mobile(user_id: int, full_name: str = None, email: str = None, 
+                                     mobile_number: str = None, profile_image_url: str = None) -> bool:
+    """
+    Update user profile including mobile number
+    
+    Args:
+        user_id: User ID
+        full_name: New full name (optional)
+        email: New email (optional)
+        mobile_number: New mobile number (optional)
+        profile_image_url: Profile image URL (optional)
+        
+    Returns:
+        True if successful
+    """
+    try:
+        db = get_db()
+        
+        updates = []
+        params = []
+        
+        if full_name:
+            updates.append("full_name = %s")
+            params.append(full_name)
+        
+        if email:
+            # Check if new email already exists
+            if check_email_exists(email):
+                return False
+            updates.append("email = %s")
+            params.append(email)
+        
+        if mobile_number is not None:  # Allow empty string to clear mobile
+            updates.append("mobile_number = %s")
+            params.append(mobile_number if mobile_number.strip() else None)
+        
+        if profile_image_url is not None:
+            updates.append("profile_image_url = %s")
+            params.append(profile_image_url)
+        
+        if not updates:
+            return False
+        
+        params.append(user_id)
+        query = f"UPDATE users SET {', '.join(updates)} WHERE user_id = %s"
+        
+        db.execute_query(query, tuple(params), fetch=False)
+        return True
+        
+    except Exception as e:
+        logger.error(f"Error updating user profile: {e}")
+        return False
 
 
 def get_user_preferences(user_id: int) -> dict:
