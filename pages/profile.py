@@ -350,11 +350,6 @@ def render():
     user_id = st.session_state.get('user_id')
     stats = get_user_trip_stats(user_id)
     
-    # Render sections
-    render_trip_stats(stats)
-    
-    st.markdown("---")
-    
     # Check if uploading profile image
     if st.session_state.get('uploading_profile_image'):
         render_profile_image_upload()
@@ -378,6 +373,11 @@ def render():
     st.markdown("---")
     
     render_preferences()
+
+    st.markdown("---")
+
+    # Render sections
+    render_trip_stats(stats)
     
     # Quick actions
     st.markdown("### 🚀 Quick Actions")
