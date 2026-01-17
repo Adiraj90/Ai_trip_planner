@@ -1,0 +1,40 @@
+# Core Framework
+streamlit
+streamlit-option-menu
+
+# Database
+mysql-connector-python
+pymysql
+sqlalchemy
+
+# LLM & AI
+groq
+langchain
+langchain-core
+langchain-community
+
+# HTTP Requests & APIs
+requests
+httpx
+
+# Image Processing
+Pillow
+
+# Data Processing
+pandas
+numpy
+plotly
+kaleido
+
+# PDF Generation
+reportlab
+
+# Environment Variables
+python-dotenv
+
+# Date & Time
+python-dateutil
+
+# Utilities
+pydantic
+typing-extensions

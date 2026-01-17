@@ -1,0 +1,11 @@
+travel_venv/
+test/
+.streamlit/secrets.toml
+__pycache__/
+*.py[cod]
+.env
+.env.*
+*.env
+.DS_Store
+Thumbs.db
+*.log
