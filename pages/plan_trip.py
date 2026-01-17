@@ -590,7 +590,7 @@ def render_itinerary(itinerary: dict):
 
 
 def render_day_card(day_info: dict):
-    """Render a single day's itinerary"""
+    """Render a single day's itinerary with image on left and overview on right"""
     
     day_num = day_info.get('day', 1)
     day_date = day_info.get('date', '')
@@ -617,12 +617,25 @@ def render_day_card(day_info: dict):
         except Exception as e:
             pass
     
-    # Expandable day card with image layout
+    # If no image found, use fallback
+    if not day_image_url:
+        try:
+            from utils.image_service import get_image_service
+            image_service = get_image_service()
+            # Use Lorem Picsum as fallback
+            fallback_img = f"https://picsum.photos/seed/{hash(f'{activity_name}{city}') % 1000}/400/300"
+            day_image_url = fallback_img
+        except:
+            # Ultimate fallback - no image
+            day_image_url = None
+    
+    # Expandable day card with image and overview side-by-side
     with st.expander(f"**Day {day_num}: {day_title}** ({day_date})", expanded=(day_num == 1)):
         
-        # Day header with image if available
+        # Day header with image on left and summary on right
         if day_image_url:
             img_col, summary_col = st.columns([1, 2])
+            
             with img_col:
                 try:
                     st.image(day_image_url, use_container_width=True, caption=activity_name, output_format="PNG")
@@ -635,50 +648,35 @@ def render_day_card(day_info: dict):
                     </div>
                     <p style="text-align: center; color: #666; margin-top: 5px; font-size: 0.9rem;">{activity_name}</p>
                     """, unsafe_allow_html=True)
-        else:
-            # Try to get a fallback image
-            try:
-                from utils.image_service import get_image_service
-                image_service = get_image_service()
-                # Use Lorem Picsum as fallback
-                fallback_img = f"https://picsum.photos/seed/{hash(f'{activity_name}{city}') % 1000}/400/300"
-                
-                img_col, summary_col = st.columns([1, 2])
-                with img_col:
-                    try:
-                        st.image(fallback_img, use_container_width=True, caption=activity_name)
-                    except:
-                        st.markdown(f"""
-                        <div style="width: 100%; height: 200px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-                                    display: flex; align-items: center; justify-content: center; border-radius: 10px;">
-                            <div style="color: white; font-size: 3rem;">🗺️</div>
-                        </div>
-                        <p style="text-align: center; color: #666; margin-top: 5px; font-size: 0.9rem;">{activity_name}</p>
-                        """, unsafe_allow_html=True)
-                with summary_col:
-                    # Day Summary
-                    if day_summary:
-                        st.markdown(f"""
-                        <div class="info-box" style="background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%); 
-                                    border-left: 4px solid #667eea; margin-bottom: 1.5rem;">
-                            <p style="color: #333; line-height: 1.6; margin: 0;">
-                                <strong>📝 Day Overview:</strong><br>
-                                {day_summary}
-                            </p>
-                        </div>
-                        """, unsafe_allow_html=True)
-            except:
-                # Day Summary without image (fallback if image generation fails)
+            
+            with summary_col:
+                # Day Summary displayed on the right side of image
                 if day_summary:
                     st.markdown(f"""
                     <div class="info-box" style="background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%); 
-                                border-left: 4px solid #667eea; margin-bottom: 1.5rem;">
+                                border-left: 4px solid #667eea; margin-bottom: 1rem; height: 100%;">
                         <p style="color: #333; line-height: 1.6; margin: 0;">
-                            <strong>📝 Day Overview:</strong><br>
+                            <strong style="color: #667eea; font-size: 1.1rem;">📝 Day Overview:</strong><br><br>
                             {day_summary}
                         </p>
                     </div>
                     """, unsafe_allow_html=True)
+                else:
+                    st.info("No overview available for this day.")
+        else:
+            # No image available - just show summary
+            if day_summary:
+                st.markdown(f"""
+                <div class="info-box" style="background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%); 
+                            border-left: 4px solid #667eea; margin-bottom: 1.5rem;">
+                    <p style="color: #333; line-height: 1.6; margin: 0;">
+                        <strong style="color: #667eea; font-size: 1.1rem;">📝 Day Overview:</strong><br><br>
+                        {day_summary}
+                    </p>
+                </div>
+                """, unsafe_allow_html=True)
+        
+        st.markdown("<br>", unsafe_allow_html=True)
         
         # Activities
         st.markdown("#### 🎯 Activities")

@@ -1,5 +1,5 @@
 """
-Authentication Page - Login and Signup
+Authentication Page - Login and Signup (Fixed with Phone Number)
 """
 import streamlit as st
 from database.queries import (
@@ -104,6 +104,14 @@ def render_signup_form():
                 key="signup_username"
             )
         
+        # Phone number input
+        mobile_number = st.text_input(
+            "Mobile Number (Optional)",
+            placeholder="+1234567890 or 1234567890",
+            key="signup_mobile",
+            help="Enter your phone number with country code (optional)"
+        )
+        
         # Country selection
         country = st.selectbox(
             "Your Country *",
@@ -190,6 +198,14 @@ def render_signup_form():
         elif check_username_exists(username):
             errors.append("⚠️ This username is already taken! Please choose a different one.")
         
+        # Validate mobile number if provided
+        if mobile_number and mobile_number.strip():
+            # Remove spaces and dashes for validation
+            cleaned_mobile = mobile_number.strip().replace(" ", "").replace("-", "")
+            # Check if it's a valid phone number format (digits only, possibly with + prefix)
+            if not re.match(r"^\+?[0-9]{10,15}$", cleaned_mobile):
+                errors.append("Invalid mobile number format. Use format: +1234567890 or 1234567890")
+        
         if country == "Select your country":
             errors.append("Please select your country")
         
@@ -209,9 +225,12 @@ def render_signup_form():
                 st.error(f"❌ {error}")
             return
         
-        # Create user
+        # Create user with mobile number
         with st.spinner("Creating your account..."):
-            result = create_user(username, email, password, full_name, country)
+            # Clean mobile number before saving
+            cleaned_mobile = mobile_number.strip().replace(" ", "").replace("-", "") if mobile_number and mobile_number.strip() else None
+            
+            result = create_user_with_mobile(username, email, password, full_name, country, cleaned_mobile)
             
             if 'error' in result:
                 st.error(f"❌ {result['error']}")
@@ -234,6 +253,87 @@ def render_signup_form():
                 time.sleep(2)
                 st.session_state.current_page = "Home"
                 st.rerun()
+
+
+def create_user_with_mobile(username: str, email: str, password: str, full_name: str, country: str, mobile_number: str = None) -> dict:
+    """
+    Create a new user with mobile number
+    
+    Args:
+        username: Username
+        email: Email address
+        password: Plain text password (will be hashed)
+        full_name: Full name
+        country: User's country
+        mobile_number: Mobile number (optional)
+        
+    Returns:
+        User dict if successful, error dict otherwise
+    """
+    try:
+        from config.database import get_db
+        from utils.helpers import hash_password, get_currency_for_country
+        import logging
+        
+        logger = logging.getLogger(__name__)
+        
+        # Check if email exists
+        if check_email_exists(email):
+            return {'error': 'Email is already registered'}
+        
+        # Check if username exists
+        if check_username_exists(username):
+            return {'error': 'Username is already taken'}
+        
+        # Hash password
+        password_hash = hash_password(password)
+        
+        db = get_db()
+        
+        # Try to insert with mobile_number column
+        try:
+            query = """
+                INSERT INTO users (username, email, password_hash, full_name, country, mobile_number)
+                VALUES (%s, %s, %s, %s, %s, %s)
+            """
+            db.execute_query(query, (username, email, password_hash, full_name, country, mobile_number), fetch=False)
+        except Exception as e:
+            # If mobile_number column doesn't exist, try without it
+            logger.warning(f"Failed to insert with mobile_number, trying without: {e}")
+            query = """
+                INSERT INTO users (username, email, password_hash, full_name, country)
+                VALUES (%s, %s, %s, %s, %s)
+            """
+            db.execute_query(query, (username, email, password_hash, full_name, country), fetch=False)
+        
+        user_id = db.get_last_insert_id()
+        
+        if user_id:
+            # Create user preferences with country
+            pref_query = """
+                INSERT INTO user_preferences (user_id, default_currency, preferred_trip_type)
+                VALUES (%s, %s, %s)
+            """
+            # Auto-detect currency based on country
+            currency = get_currency_for_country(country)
+            
+            db.execute_query(pref_query, (user_id, currency, 'Adventure'), fetch=False)
+            
+            # Return user data
+            return {
+                'user_id': user_id,
+                'username': username,
+                'email': email,
+                'full_name': full_name,
+                'country': country,
+                'mobile_number': mobile_number
+            }
+        
+        return {'error': 'Failed to create user'}
+        
+    except Exception as e:
+        logger.error(f"Error creating user: {e}")
+        return {'error': str(e)}
 
 
 def render():

@@ -110,7 +110,6 @@ def create_user(username: str, email: str, password: str, full_name: str, countr
         logger.error(f"Error creating user: {e}")
         return {'error': str(e)}
 
-
 def authenticate_user(username_or_email: str, password: str) -> dict:
     """
     Authenticate user credentials
@@ -126,8 +125,9 @@ def authenticate_user(username_or_email: str, password: str) -> dict:
         password_hash = hash_password(password)
         
         db = get_db()
+        # Updated to include mobile_number
         query = """
-            SELECT user_id, username, email, full_name, country
+            SELECT user_id, username, email, full_name, country, mobile_number
             FROM users
             WHERE (username = %s OR email = %s) AND password_hash = %s
         """
@@ -159,7 +159,7 @@ def authenticate_user(username_or_email: str, password: str) -> dict:
 
 def get_user_by_id(user_id: int) -> dict:
     """
-    Get user by ID
+    Get user by ID (Fixed to include mobile_number)
     
     Args:
         user_id: User ID
@@ -169,22 +169,51 @@ def get_user_by_id(user_id: int) -> dict:
     """
     try:
         db = get_db()
+        # First, try with mobile_number and profile_image_url
         query = """
-            SELECT user_id, username, email, full_name, created_at, profile_image_url
+            SELECT user_id, username, email, full_name, created_at, mobile_number, profile_image_url
             FROM users
             WHERE user_id = %s
         """
         
-        result = db.execute_query(query, (user_id,))
-        
-        if result:
-            return result[0]
-        
-        return None
-        
-    except Exception as e:
-        # If profile_image_url column doesn't exist, try without it
         try:
+            result = db.execute_query(query, (user_id,))
+            if result:
+                return result[0]
+        except Exception as col_error:
+            logger.warning(f"Error fetching with mobile_number/profile_image_url: {col_error}")
+            
+            # Fallback 1: Try with just mobile_number
+            try:
+                query = """
+                    SELECT user_id, username, email, full_name, created_at, mobile_number
+                    FROM users
+                    WHERE user_id = %s
+                """
+                result = db.execute_query(query, (user_id,))
+                if result:
+                    user = result[0]
+                    user['profile_image_url'] = None
+                    return user
+            except:
+                pass
+            
+            # Fallback 2: Try with just profile_image_url
+            try:
+                query = """
+                    SELECT user_id, username, email, full_name, created_at, profile_image_url
+                    FROM users
+                    WHERE user_id = %s
+                """
+                result = db.execute_query(query, (user_id,))
+                if result:
+                    user = result[0]
+                    user['mobile_number'] = None
+                    return user
+            except:
+                pass
+            
+            # Fallback 3: Basic query without mobile_number or profile_image_url
             query = """
                 SELECT user_id, username, email, full_name, created_at
                 FROM users
@@ -193,10 +222,13 @@ def get_user_by_id(user_id: int) -> dict:
             result = db.execute_query(query, (user_id,))
             if result:
                 user = result[0]
+                user['mobile_number'] = None
                 user['profile_image_url'] = None
                 return user
-        except:
-            pass
+        
+        return None
+        
+    except Exception as e:
         logger.error(f"Error getting user: {e}")
         return None
 
@@ -269,32 +301,55 @@ def update_user_profile_with_mobile(user_id: int, full_name: str = None, email: 
         updates = []
         params = []
         
+        # Handle full name update
         if full_name:
             updates.append("full_name = %s")
             params.append(full_name)
         
+        # Handle email update - only check if email is being changed
         if email:
-            # Check if new email already exists
-            if check_email_exists(email):
-                return False
-            updates.append("email = %s")
-            params.append(email)
+            # Get current user's email
+            current_user_query = "SELECT email FROM users WHERE user_id = %s"
+            current_user = db.execute_query(current_user_query, (user_id,))
+            
+            if current_user:
+                current_email = current_user[0]['email']
+                
+                # Only check if email already exists if user is trying to change it
+                if email != current_email:
+                    # Check if new email is already used by another user
+                    email_check_query = "SELECT user_id FROM users WHERE email = %s AND user_id != %s"
+                    email_exists = db.execute_query(email_check_query, (email, user_id))
+                    
+                    if email_exists:
+                        logger.warning(f"Email {email} already exists for another user")
+                        return False
+                
+                # Add email to updates
+                updates.append("email = %s")
+                params.append(email)
         
+        # Handle mobile number update (can be duplicate across users)
         if mobile_number is not None:  # Allow empty string to clear mobile
             updates.append("mobile_number = %s")
             params.append(mobile_number if mobile_number.strip() else None)
         
+        # Handle profile image update
         if profile_image_url is not None:
             updates.append("profile_image_url = %s")
             params.append(profile_image_url)
         
+        # If no updates, return False
         if not updates:
+            logger.warning("No updates provided to update_user_profile_with_mobile")
             return False
         
+        # Build and execute update query
         params.append(user_id)
         query = f"UPDATE users SET {', '.join(updates)} WHERE user_id = %s"
         
         db.execute_query(query, tuple(params), fetch=False)
+        logger.info(f"Successfully updated profile for user {user_id}")
         return True
         
     except Exception as e:
