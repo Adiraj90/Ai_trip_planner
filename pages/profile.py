@@ -136,61 +136,84 @@ def render_personal_info():
         else:
             st.markdown("""
             <style>
-            .profile-placeholder {{
+            .profile-image-container {
+                position: relative;
                 width: 320px;
                 height: 320px;
+                margin: 0 auto;
+                cursor: pointer;
+            }
+
+            .profile-image-wrapper {
+                width: 100%;
+                height: 100%;
                 border-radius: 50%;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                overflow: hidden;
+                border: 6px solid #667eea;
+                box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+
+                /* 🔥 IMPORTANT PART */
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                font-size: 8rem;
-                color: white;
-                margin: 0 auto;
-                border: 6px solid #667eea;
-                box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-                position: relative;
-                cursor: pointer;
-            }}
-            .profile-overlay-placeholder {{
+                font-size: 200px;
+                line-height: 1;
+                user-select: none;
+            }
+
+            .profile-image-wrapper img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+
+            .profile-image-overlay {
                 position: absolute;
-                bottom: 20px;
-                left: 50%;
-                transform: translateX(-50%);
-                background: rgba(255, 255, 255, 0);
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: linear-gradient(
+                    to top,
+                    rgba(102, 126, 234, 0.95),
+                    transparent
+                );
                 color: white;
-                padding: 10px 20px;
+                text-align: center;
+                padding: 15px;
+                border-radius: 0 0 160px 160px;
+                opacity: 0;
+                transition: opacity 0.3s ease;
                 font-size: 1.1rem;
                 font-weight: 600;
-                border-radius: 20px;
-                opacity: 0;
-                transition: all 0.3s ease;
-                white-space: nowrap;
-            }}
-            .profile-placeholder:hover .profile-overlay-placeholder {{
+                cursor: pointer;
+                z-index: 10;
+            }
+
+            .profile-image-container:hover .profile-image-overlay {
                 opacity: 1;
-                background: rgba(255, 255, 255, 0.95);
-                color: #667eea;
-            }}
+            }
             </style>
-            <div class="profile-placeholder">
-                👤
-                <div class="profile-overlay-placeholder">✏️ Add Image</div>
+
+            <div class="profile-image-container">
+                <div class="profile-image-wrapper">
+                    👤
+                </div>
+                <div class="profile-image-overlay">
+                    ✏️ Add Image
+                </div>
             </div>
             """, unsafe_allow_html=True)
-        
+
         # Display username below the image
         st.markdown(f"""
         <div style="text-align: center; margin-top: 1.5rem;">
             <span style="color: #667eea; font-size: 1.3rem; font-weight: 600;">@{user.get('username', 'N/A')}</span>
         </div>
         """, unsafe_allow_html=True)
-        
-        # Small clickable button styled to blend with image
-        # Position it to overlay the entire image area
+    
         col_a, col_b, col_c = st.columns([0.5, 1, 0.5])
         with col_b:
-            if st.button("🖼️", key="click_to_edit_image", 
+            if st.button("🖼️ edit image", key="click_to_edit_image", 
                         help="Click to edit your profile picture",
                         use_container_width=True):
                 st.session_state.editing_profile_image = True
