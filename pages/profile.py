@@ -65,6 +65,11 @@ def render_personal_info():
         st.error("Unable to load user information")
         return
     
+    if st.query_params.get("edit_image") == "1":
+        st.session_state.editing_profile_image = True
+        st.query_params.clear()
+        st.rerun()
+    
     # Check if user is editing profile image
     is_editing_image = st.session_state.get('editing_profile_image', False)
     
@@ -98,38 +103,10 @@ def render_personal_info():
                 border: 6px solid #667eea;
                 box-shadow: 0 8px 20px rgba(0,0,0,0.3);
             }}
-            .profile-image-wrapper img {{
-                width: 100%;
-                height: 100%;
-                object-fit: cover;
-            }}
-            .profile-image-overlay {{
-                position: absolute;
-                bottom: 0;
-                left: 0;
-                right: 0;
-                background: linear-gradient(to top, rgba(102, 126, 234, 0.95), transparent);
-                color: white;
-                text-align: center;
-                padding: 15px;
-                border-radius: 0 0 160px 160px;
-                opacity: 0;
-                transition: opacity 0.3s ease;
-                font-size: 1.1rem;
-                font-weight: 600;
-                cursor: pointer;
-                z-index: 10;
-            }}
-            .profile-image-container:hover .profile-image-overlay {{
-                opacity: 1;
-            }}
             </style>
             <div class="profile-image-container">
                 <div class="profile-image-wrapper">
                     <img src="{profile_image_url}" alt="Profile Picture">
-                </div>
-                <div class="profile-image-overlay">
-                    ✏️ Edit Image
                 </div>
             </div>
             """, unsafe_allow_html=True)
@@ -166,44 +143,14 @@ def render_personal_info():
                 height: 100%;
                 object-fit: cover;
             }
-
-            .profile-image-overlay {
-                position: absolute;
-                bottom: 0;
-                left: 0;
-                right: 0;
-                background: linear-gradient(
-                    to top,
-                    rgba(102, 126, 234, 0.95),
-                    transparent
-                );
-                color: white;
-                text-align: center;
-                padding: 15px;
-                border-radius: 0 0 160px 160px;
-                opacity: 0;
-                transition: opacity 0.3s ease;
-                font-size: 1.1rem;
-                font-weight: 600;
-                cursor: pointer;
-                z-index: 10;
-            }
-
-            .profile-image-container:hover .profile-image-overlay {
-                opacity: 1;
-            }
             </style>
-
             <div class="profile-image-container">
                 <div class="profile-image-wrapper">
                     👤
                 </div>
-                <div class="profile-image-overlay">
-                    ✏️ Add Image
-                </div>
             </div>
             """, unsafe_allow_html=True)
-
+        
         # Display username below the image
         st.markdown(f"""
         <div style="text-align: center; margin-top: 1.5rem;">
