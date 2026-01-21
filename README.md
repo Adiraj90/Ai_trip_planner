@@ -271,7 +271,9 @@ CREATE DATABASE ai_trip_planner;
 ```
 
 Import the schema (create tables as defined in `database/models.py`):
--- for reference you can go through the sql queries in database_schema.db
+```
+For reference you can go through sql queries in database_schema.db
+```
 
 ### 5️⃣ Configure Secrets
 
@@ -301,7 +303,7 @@ UNSPLASH_API_KEY = "your_unsplash_key"
 streamlit run app.py
 ```
 
-The app will open at `http://localhost:8501`
+The app will open at your local host for example `http://localhost:8501`
 
 ---
 
@@ -386,135 +388,20 @@ The app will open at `http://localhost:8501`
 ### How LangChain Powers This Application
 
 #### 1. **LLM Initialization & Configuration**
-```python
-from groq import Groq
-
-class LLMHandler:
-    def __init__(self):
-        self.client = Groq(api_key=st.secrets["GROQ_API_KEY"])
-        self.model = "llama-3.3-70b-versatile"
-```
 
 #### 2. **Structured Output Generation**
 LangChain principles are used to enforce JSON schemas:
-```python
-def generate_json_response(self, prompt: str, system_message: str):
-    """
-    Generate JSON with strict schema enforcement
-    Uses prompt engineering + regex cleaning
-    """
-    response = self.client.chat.completions.create(
-        model=self.model,
-        messages=[
-            {"role": "system", "content": system_message},
-            {"role": "user", "content": prompt}
-        ],
-        temperature=0.5,
-        max_tokens=16000  # Large context for 30-day trips
-    )
-    
-    # Extract JSON from markdown code blocks
-    if "```json" in response:
-        json_str = response.split("```json")[1].split("```")[0].strip()
-    
-    # Regex cleaning for malformed JSON
-    json_str = re.sub(r',\s*}', '}', json_str)  # Remove trailing commas
-    
-    return json.loads(json_str)
-```
 
 #### 3. **Agent-Specific Prompts**
-
+```
 **Destination Agent:**
-```python
-prompt = f"""
-Generate comprehensive information about {city}, {country}.
-Return ONLY a valid JSON object with this exact structure:
-{{
-    "description": "Brief 2-3 sentence description",
-    "popular_places": [...],
-    "culture": "Cultural insights",
-    "local_language": "Languages spoken",
-    "famous_foods": [...],
-    "best_time_to_visit": "Season recommendations",
-    "local_tips": "Traveler tips"
-}}
-"""
-```
-
 **Itinerary Agent:**
-```python
-prompt = f"""
-Create a {num_days}-day travel itinerary for {city}, {country}.
-
-TRIP DETAILS:
-- Budget: {budget} {currency} (total for {num_people} people)
-- Trip Types: {trip_types}
-- Food Preference: {food_preference}
-
-Return JSON with:
-{{
-    "trip_overview": "Summary",
-    "total_estimated_cost": float,
-    "daily_itinerary": [
-        {{
-            "day": 1,
-            "date": "{date}",
-            "title": "Day theme",
-            "summary": "2-3 sentence overview",
-            "activities": [...],
-            "meals": [...],
-            "accommodation": {{...}}
-        }}
-    ]
-}}
-
-CONSTRAINTS:
-- Respect budget: {budget} {currency}
-- Include all {num_days} days
-- Each day needs summary, 3-5 activities, 3 meals, accommodation
-"""
 ```
-
 #### 4. **Context Management**
-```python
-# Session state preserves context across agents
-if 'destination_info' in st.session_state:
-    # Itinerary agent uses cached destination data
-    dest_info = st.session_state.destination_info
-    
-    # Pass to itinerary generation
-    itinerary = agent.generate_itinerary(
-        city=dest_info['city'],
-        attractions=dest_info['popular_places']
-    )
-```
 
 #### 5. **Error Handling & Retry Logic**
-```python
-try:
-    parsed = json.loads(json_str)
-    logger.info("Successfully parsed JSON")
-    return parsed
-except json.JSONDecodeError as e:
-    # Retry with cleaning
-    json_str = re.sub(r',\s*}', '}', json_str)
-    parsed = json.loads(json_str)
-    return parsed
-```
 
 #### 6. **Token Optimization**
-```python
-# Dynamic token allocation based on trip length
-estimated_tokens = max(8000, num_days * 600)  # 600 tokens per day
-max_tokens = min(16000, estimated_tokens)  # Cap at model limit
-
-response = self.generate_response(
-    prompt=prompt,
-    max_tokens=max_tokens
-)
-```
-
 ---
 
 ## 🎨 UI/UX Features
@@ -595,92 +482,14 @@ destinations_cache (independent)
 ## 🚧 Advanced Features
 
 ### 1. **Duplicate Trip Prevention**
-```python
-def _check_duplicate_trip(self, user_id, city, state, country, 
-                          num_days, budget, num_people):
-    """
-    Validates unique trips based on:
-    - Destination (city, state, country)
-    - Duration (number of days)
-    - Budget (±10% tolerance)
-    - Group size (num_people)
-    """
-    budget_min = budget * 0.9
-    budget_max = budget * 1.1
-    
-    query = """
-        SELECT trip_id FROM trips 
-        WHERE user_id = %s AND destination_city = %s 
-        AND DATEDIFF(end_date, start_date) + 1 = %s
-        AND budget BETWEEN %s AND %s
-        AND num_people = %s
-    """
-```
 
 ### 2. **Smart Pagination**
-```python
-# Dynamic limits based on city size
-major_cities = ["delhi", "mumbai", "new york", ...]
-is_major_city = city.lower() in major_cities
-max_limit = 30 if is_major_city else 20
-
-# Load more button
-if st.session_state.hotels_total_loaded < max_limit:
-    if st.button("Load More Hotels (Generate 5 new)"):
-        # Generate 5 additional hotels
-        new_hotels = agent.find_hotels(num_results=5)
-        st.session_state.hotels_list.extend(new_hotels)
-```
 
 ### 3. **Multi-Select Trip Types**
-```python
-# Support multiple trip types in a single itinerary
-trip_types = st.multiselect(
-    "Trip Type(s)",
-    options=["Adventure", "Relaxation", "Cultural", ...],
-    default=["Adventure"]
-)
-
-# Store as JSON array
-trip_types_json = json.dumps(trip_types)
-```
 
 ### 4. **Profile Image Upload**
-```python
-def convert_image_to_url(uploaded_file):
-    """
-    Convert uploaded image to base64 data URL
-    - Resize to max 800x800
-    - Compress as JPEG with 85% quality
-    - Warn if > 500KB
-    """
-    image = Image.open(uploaded_file)
-    image.thumbnail((800, 800), Image.Resampling.LANCZOS)
-    
-    buffered = BytesIO()
-    image.save(buffered, format="JPEG", quality=85, optimize=True)
-    
-    base64_encoded = base64.b64encode(buffered.getvalue()).decode()
-    return f"data:image/jpeg;base64,{base64_encoded}"
-```
 
 ### 5. **PDF Generation with Charts**
-```python
-def generate_trip_pdf(trip_data, itinerary):
-    """
-    Creates professional PDF with:
-    - Trip overview table
-    - Analytics charts (Plotly → PNG via Kaleido)
-    - Day-by-day itinerary
-    - Activities, meals, accommodation
-    - Grand total calculations
-    """
-    # Generate expense chart
-    expense_chart_img = _create_expense_chart_image(itinerary)
-    
-    # Add to PDF
-    elements.append(Image(expense_chart_img, width=5.5*inch))
-```
 
 ---
 
@@ -724,8 +533,8 @@ Computer Engineering Student
 Passionate about: Generative AI, Multi-Agent Systems, LangChain, Applied ML
 
 📧 Email: your.email@example.com  
-🔗 LinkedIn: [Your Profile](https://linkedin.com/in/yourprofile)  
-🐙 GitHub: [Your Username](https://github.com/yourusername)
+🔗 LinkedIn: [Your Profile](https://www.linkedin.com/in/theadityaraj91/)  
+🐙 GitHub: [Your Username](https://github.com/Adiraj90)
 
 ---
 
