@@ -1012,3 +1012,88 @@ def get_user_bookmarks(user_id: int) -> dict:
             'hotels': [],
             'restaurants': []
         }
+
+def verify_current_password(user_id: int, password: str) -> bool:
+    """
+    Verify if the provided password matches the user's current password
+    
+    Args:
+        user_id: User ID
+        password: Plain text password to verify
+        
+    Returns:
+        True if password matches, False otherwise
+    """
+    try:
+        from utils.helpers import hash_password
+        
+        password_hash = hash_password(password)
+        
+        db = get_db()
+        query = """
+            SELECT user_id FROM users
+            WHERE user_id = %s AND password_hash = %s
+        """
+        
+        result = db.execute_query(query, (user_id, password_hash))
+        return len(result) > 0
+        
+    except Exception as e:
+        logger.error(f"Error verifying password: {e}")
+        return False
+
+
+def update_user_password(user_id: int, current_password: str, new_password: str) -> dict:
+    """
+    Update user password (requires current password verification)
+    
+    Args:
+        user_id: User ID
+        current_password: Current password for verification
+        new_password: New password to set
+        
+    Returns:
+        Dict with 'success' bool and 'message' string
+    """
+    try:
+        from utils.helpers import hash_password
+        
+        # First verify current password
+        if not verify_current_password(user_id, current_password):
+            return {
+                'success': False,
+                'message': 'Current password is incorrect'
+            }
+        
+        # Validate new password
+        if len(new_password) < 8:
+            return {
+                'success': False,
+                'message': 'New password must be at least 8 characters long'
+            }
+        
+        # Hash new password
+        new_password_hash = hash_password(new_password)
+        
+        # Update password in database
+        db = get_db()
+        query = """
+            UPDATE users 
+            SET password_hash = %s
+            WHERE user_id = %s
+        """
+        
+        db.execute_query(query, (new_password_hash, user_id), fetch=False)
+        
+        logger.info(f"Password updated successfully for user {user_id}")
+        return {
+            'success': True,
+            'message': 'Password updated successfully'
+        }
+        
+    except Exception as e:
+        logger.error(f"Error updating password: {e}")
+        return {
+            'success': False,
+            'message': f'Failed to update password: {str(e)}'
+        }

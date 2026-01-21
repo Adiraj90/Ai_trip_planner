@@ -5,7 +5,7 @@ import streamlit as st
 from database.queries import (
     get_user_by_id, get_user_trip_stats, 
     get_user_preferences, update_user_profile,
-    update_user_preferences
+    update_user_preferences, update_user_password 
 )
 from utils.helpers import format_currency, get_currency_for_country
 
@@ -501,8 +501,8 @@ def render_edit_profile_form():
     prefs = get_user_preferences(user_id)
     
     # Create tabs for better organization
-    tab1, tab2, tab3 = st.tabs(["📝 Personal Info", "📷 Profile Picture", "⚙️ Preferences"])
-    
+    tab1, tab2, tab3, tab4 = st.tabs(["📝 Personal Info", "📷 Profile Picture", "⚙️ Preferences", "🔐 Change Password"]) 
+
     with tab1:
         st.markdown("#### Update Personal Information")
         
@@ -886,6 +886,130 @@ def render_edit_profile_form():
         if cancel_prefs_button:
             st.session_state.editing_profile = False
             st.rerun()
+
+    with tab4:
+        st.markdown("#### Change Your Password")
+        
+        st.info("""
+        🔐 **Password Security Tips:**
+        - Use at least 8 characters
+        - Include uppercase and lowercase letters
+        - Add numbers and special characters
+        - Don't reuse passwords from other sites
+        """)
+        
+        with st.form("change_password_form"):
+            st.markdown("**Enter Password Details**")
+            
+            current_password = st.text_input(
+                "Current Password *",
+                type="password",
+                placeholder="Enter your current password",
+                key="current_password_input",
+                help="You must enter your current password to change it"
+            )
+            
+            st.markdown("---")
+            
+            new_password = st.text_input(
+                "New Password *",
+                type="password",
+                placeholder="Enter new password (minimum 8 characters)",
+                key="new_password_input",
+                help="Choose a strong password"
+            )
+            
+            confirm_new_password = st.text_input(
+                "Confirm New Password *",
+                type="password",
+                placeholder="Re-enter new password",
+                key="confirm_new_password_input",
+                help="Must match new password"
+            )
+            
+            # Password strength indicator
+            if new_password:
+                strength_score = 0
+                if len(new_password) >= 8:
+                    strength_score += 1
+                if len(new_password) >= 12:
+                    strength_score += 1
+                if any(c.isupper() for c in new_password):
+                    strength_score += 1
+                if any(c.islower() for c in new_password):
+                    strength_score += 1
+                if any(c.isdigit() for c in new_password):
+                    strength_score += 1
+                if any(c in '!@#$%^&*()_+-=[]{}|;:,.<>?' for c in new_password):
+                    strength_score += 1
+                
+                if strength_score <= 2:
+                    st.warning("⚠️ Password Strength: **Weak** - Add more variety")
+                elif strength_score <= 4:
+                    st.info("💡 Password Strength: **Medium** - Good, but could be stronger")
+                else:
+                    st.success("✅ Password Strength: **Strong** - Excellent!")
+            
+            st.markdown("---")
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                change_password_button = st.form_submit_button(
+                    "🔐 Change Password", 
+                    use_container_width=True, 
+                    type="primary"
+                )
+            
+            with col2:
+                cancel_password_button = st.form_submit_button(
+                    "❌ Cancel", 
+                    use_container_width=True
+                )
+        
+        if change_password_button:
+            # Validate inputs
+            errors = []
+            
+            if not current_password:
+                errors.append("Current password is required")
+            
+            if not new_password:
+                errors.append("New password is required")
+            elif len(new_password) < 8:
+                errors.append("New password must be at least 8 characters long")
+            
+            if not confirm_new_password:
+                errors.append("Please confirm your new password")
+            elif new_password != confirm_new_password:
+                errors.append("New passwords do not match")
+            
+            if current_password == new_password:
+                errors.append("New password must be different from current password")
+            
+            if errors:
+                for error in errors:
+                    st.error(f"❌ {error}")
+            else:
+                # Attempt to change password
+                with st.spinner("Updating password..."):
+                    result = update_user_password(user_id, current_password, new_password)
+                    
+                    if result['success']:
+                        st.success(f"✅ {result['message']}")
+                        st.balloons()
+                        st.info("🔐 Your password has been changed successfully! You can continue using the app.")
+                        import time
+                        time.sleep(2)
+                        st.session_state.editing_profile = False
+                        st.rerun()
+                    else:
+                        st.error(f"❌ {result['message']}")
+        
+        if cancel_password_button:
+            st.session_state.editing_profile = False
+            st.rerun()
+    
 
 
 
