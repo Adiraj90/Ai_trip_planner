@@ -520,11 +520,11 @@ destinations_cache (independent)
 
 **Aditya Raj**  
 Computer Engineering Student  
-Passionate about: Generative AI, Multi-Agent Systems, LangChain, Applied ML
+Passionate about: Generative AI, Multi-Agent Systems, LangChain, ML & DL
 
-📧 Email: your.email@example.com  
-🔗 LinkedIn: [Your Profile](https://www.linkedin.com/in/theadityaraj91/)  
-🐙 GitHub: [Your Username](https://github.com/Adiraj90)
+📧 Email: adikumar.rajhq91@gmail.com
+🔗 LinkedIn: [Aditya Raj](https://www.linkedin.com/in/theadityaraj91/)  
+🐙 GitHub: [Adiraj90](https://github.com/Adiraj90)
 
 ---
 
