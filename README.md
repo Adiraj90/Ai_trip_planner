@@ -220,6 +220,7 @@ ai-trip-planner/
 │   └── secrets.toml             # API keys (not in git)
 │
 ├── app.py                       # Main application entry
+├── database_schema.db           # database schema
 ├── requirements.txt             # Python dependencies
 ├── .gitignore                   # Git ignore rules
 └── README.md                    # This file
@@ -270,143 +271,7 @@ CREATE DATABASE ai_trip_planner;
 ```
 
 Import the schema (create tables as defined in `database/models.py`):
-```sql
--- Users table
-CREATE TABLE users (
-    user_id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(50) UNIQUE NOT NULL,
-    email VARCHAR(100) UNIQUE NOT NULL,
-    password_hash VARCHAR(255) NOT NULL,
-    full_name VARCHAR(100),
-    country VARCHAR(50),
-    mobile_number VARCHAR(20),
-    profile_image_url TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
-
--- User preferences table
-CREATE TABLE user_preferences (
-    preference_id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    default_currency VARCHAR(10) DEFAULT 'USD',
-    preferred_trip_type TEXT,  -- JSON array for multiple types
-    preferred_food_type VARCHAR(50),
-    preferred_budget_range VARCHAR(50),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
-);
-
--- Trips table
-CREATE TABLE trips (
-    trip_id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    destination_city VARCHAR(100) NOT NULL,
-    destination_state VARCHAR(100),
-    destination_country VARCHAR(100) NOT NULL,
-    start_date DATE NOT NULL,
-    end_date DATE NOT NULL,
-    budget DECIMAL(10, 2),
-    currency VARCHAR(10),
-    trip_type VARCHAR(100),
-    food_preference VARCHAR(50),
-    num_people INT DEFAULT 1,
-    itinerary_json LONGTEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
-);
-
--- Hotels table
-CREATE TABLE hotels (
-    hotel_id INT AUTO_INCREMENT PRIMARY KEY,
-    trip_id INT,
-    name VARCHAR(200) NOT NULL,
-    description TEXT,
-    location VARCHAR(200),
-    city VARCHAR(100),
-    country VARCHAR(100),
-    price_per_night DECIMAL(10, 2),
-    rating DECIMAL(3, 2),
-    image_url TEXT,
-    amenities TEXT,  -- JSON array
-    room_type VARCHAR(100),
-    latitude DECIMAL(10, 8),
-    longitude DECIMAL(11, 8),
-    maps_link TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (trip_id) REFERENCES trips(trip_id) ON DELETE CASCADE
-);
-
--- Restaurants table
-CREATE TABLE restaurants (
-    restaurant_id INT AUTO_INCREMENT PRIMARY KEY,
-    trip_id INT,
-    name VARCHAR(200) NOT NULL,
-    description TEXT,
-    location VARCHAR(200),
-    city VARCHAR(100),
-    country VARCHAR(100),
-    cuisine_type VARCHAR(100),
-    food_type VARCHAR(50),
-    price_range VARCHAR(50),
-    rating DECIMAL(3, 2),
-    image_url TEXT,
-    popular_dishes TEXT,  -- JSON array
-    opening_hours VARCHAR(20),
-    closing_hours VARCHAR(20),
-    latitude DECIMAL(10, 8),
-    longitude DECIMAL(11, 8),
-    maps_link TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (trip_id) REFERENCES trips(trip_id) ON DELETE CASCADE
-);
-
--- Destinations cache table
-CREATE TABLE destinations_cache (
-    cache_id INT AUTO_INCREMENT PRIMARY KEY,
-    city VARCHAR(100) NOT NULL,
-    country VARCHAR(100) NOT NULL,
-    description TEXT,
-    popular_places TEXT,  -- JSON array
-    culture_info TEXT,
-    local_language VARCHAR(100),
-    famous_foods TEXT,  -- JSON array
-    images_json TEXT,  -- JSON array
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    UNIQUE KEY unique_destination (city, country)
-);
-
--- Favorite trips table
-CREATE TABLE favorite_trips (
-    favorite_id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    trip_id INT,  -- NULL for popular trips
-    is_popular_trip BOOLEAN DEFAULT FALSE,
-    popular_trip_title VARCHAR(200),
-    popular_trip_destination VARCHAR(200),
-    popular_trip_data TEXT,  -- JSON for popular trip details
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
-    FOREIGN KEY (trip_id) REFERENCES trips(trip_id) ON DELETE CASCADE
-);
-
--- Bookmarks table
-CREATE TABLE bookmarks (
-    bookmark_id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    item_type ENUM('hotel', 'restaurant') NOT NULL,
-    item_name VARCHAR(200) NOT NULL,
-    item_location VARCHAR(200),
-    item_city VARCHAR(100),
-    item_country VARCHAR(100),
-    item_data TEXT,  -- JSON for full item details
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
-);
-```
+-- for reference you can go through the sql queries in database_schema.db
 
 ### 5️⃣ Configure Secrets
 
