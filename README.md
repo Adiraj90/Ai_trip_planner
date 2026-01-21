@@ -387,21 +387,15 @@ The app will open at your local host for example `http://localhost:8501`
 
 ### How LangChain Powers This Application
 
-- 1. **LLM Initialization & Configuration**
-
-- 2. **Structured Output Generation**
-LangChain principles are used to enforce JSON schemas:
-
-- 3. **Agent-Specific Prompts**
-```
-**Destination Agent:**
-**Itinerary Agent:**
-```
-- 4. **Context Management**
-
-- 5. **Error Handling & Retry Logic**
-
-- 6. **Token Optimization**
+1. **LLM Initialization & Configuration**
+2. **Structured Output Generation**
+  - LangChain principles are used to enforce JSON schemas:
+3. **Agent-Specific Prompts**
+  - **Destination Agent:**
+  - **Itinerary Agent:**
+4. **Context Management**
+5. **Error Handling & Retry Logic**
+6. **Token Optimization**
 ---
 
 ## 🎨 UI/UX Features
@@ -481,11 +475,11 @@ destinations_cache (independent)
 
 ## 🚧 Advanced Features
 
-- 1. **Duplicate Trip Prevention**
-- 2. **Smart Pagination**
-- 3. **Multi-Select Trip Types**
-- 4. **Profile Image Upload**
-- 5. **PDF Generation with Charts**
+- Duplicate Trip Prevention
+- Smart Pagination
+- Multi-Select Trip Types
+- Profile Image Upload
+- PDF Generation with Charts
 
 ---
 
