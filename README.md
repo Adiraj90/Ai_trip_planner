@@ -1,2 +1,875 @@
-# Ai_trip_planner
-My web app is a smart AI trip planner that lets users create fully customized trips 🌍, bookmark favorite plans and restaurants ❤️, download detailed itineraries as PDFs 📄, explore hotels and food places, and securely access all features through authentication 🔐
+# ✈️ AI Trip Planner
+
+A comprehensive, intelligent travel planning system powered by multiple AI agents, built with **Streamlit**, **LangChain**, and **Groq LLM**. This application leverages a multi-agent architecture to provide personalized trip itineraries, hotel recommendations, restaurant suggestions, and complete travel planning with visual analytics and PDF export capabilities.
+
+---
+
+## 🌟 Key Highlights
+
+### 🤖 Multi-Agent AI Architecture
+Unlike traditional travel apps that use a single AI model, this project implements a **specialized multi-agent system** where each agent is an expert in its domain:
+
+- **Destination Agent** - Researches cities, cultures, attractions, and local insights
+- **Itinerary Agent** - Creates day-by-day travel plans with activities, meals, and accommodations
+- **Hotel Agent** - Finds and recommends accommodations based on preferences and budget
+- **Food Agent** - Discovers restaurants matching cuisine types and dietary preferences
+
+This architecture provides:
+- ✅ **Better Results** - Each agent specializes in its domain
+- ✅ **Modular Design** - Easy to extend with new agents (flights, activities, etc.)
+- ✅ **Scalability** - Agents work independently and can be optimized separately
+- ✅ **Maintainability** - Clear separation of concerns
+
+### 🧠 LangChain Integration
+The project extensively uses **LangChain** for:
+- **LLM Orchestration** - Managing interactions with Groq's Llama 3.3 70B model
+- **Prompt Engineering** - Structured prompts for reliable JSON outputs
+- **Chain of Thought** - Complex reasoning for itinerary generation
+- **Context Management** - Maintaining conversation state across agent interactions
+- **Structured Outputs** - Consistent data formats for UI rendering
+
+---
+
+## ✨ Features
+
+### 🎯 Core Functionality
+
+#### 1. 🏠 **Intelligent Destination Research**
+- AI-powered destination insights with cultural information
+- Popular attractions with coordinates and Google Maps integration
+- Local cuisine recommendations
+- Best time to visit and travel tips
+- High-quality image galleries using Pexels/Unsplash APIs
+
+#### 2. 🗺️ **Smart Itinerary Generation**
+- **Day-by-day planning** with activities, meals, and accommodations
+- **Budget-aware recommendations** respecting total trip budget
+- **Multiple trip types** - Adventure, Cultural, Relaxation, Culinary, etc.
+- **Dietary preferences** - Vegetarian, Vegan, Non-Veg, Halal, Kosher
+- **Duplicate prevention** - Validates unique trips before saving
+- **State-specific planning** for Indian destinations
+
+#### 3. 🏨 **Hotel Discovery & Filtering**
+- AI-generated hotel recommendations with real details
+- **Advanced filtering**:
+  - Price range (Budget/Medium/Luxury)
+  - Star ratings (3★/4★/5★)
+  - Room types (Single/Double/Suite)
+  - Amenities (WiFi, Pool, Gym, Spa, etc.)
+  - AC/Non-AC preferences
+- **Smart pagination** - Load more hotels on demand (up to 30 for major cities)
+- **Bookmark system** for saving favorite hotels
+
+#### 4. 🍽️ **Restaurant Recommendations**
+- Cuisine-specific searches (Italian, Chinese, Local, etc.)
+- **Food type filtering** - Veg/Non-Veg/Vegan/Pescatarian
+- **Dietary restrictions** - Gluten-free, Dairy-free, Nut-free, etc.
+- **Service types** - Dine-in, Takeaway, Delivery
+- **Ambiance filtering** - Casual, Fine Dining, Romantic, Family-friendly
+- **Opening hours display** for planning meals
+- **Bookmark system** for saving favorite restaurants
+
+#### 5. 📊 **Trip Analytics & Visualization**
+- **Daily expense breakdown** - Stacked bar charts with Plotly
+- **Time distribution** - Pie charts showing activity allocation
+- **Category-wise spending** - Activities, Meals, Accommodation
+- **Interactive charts** with hover tooltips
+- **Budget tracking** against planned expenses
+
+#### 6. 📋 **Trip Management**
+- **Your Trips** - View all saved itineraries
+- **Popular Trips** - Pre-made trip ideas personalized by country
+- **Favorites System** - Heart/bookmark trips for quick access
+- **Bookmarks** - Save hotels and restaurants separately
+- **PDF Export** - Professional trip reports with charts and analytics
+
+#### 7. 👤 **User Profile & Preferences**
+- **Profile management** with profile picture upload
+- **Travel preferences** - Default currency, trip types, food preferences
+- **Trip statistics** - Total trips, countries visited, budget spent
+- **Password management** with security validation
+- **Mobile number** support (optional, can be duplicate)
+
+---
+
+## 🏗️ Architecture & Design
+
+### Multi-Agent System Design
+```
+┌─────────────────────────────────────────────────────────┐
+│                     User Interface                      │
+│                      (Streamlit)                        │
+└─────────────────────────────────────────────────────────┘
+                            │
+        ┌───────────────────┼───────────────────┐
+        │                   │                   │
+        ▼                   ▼                   ▼
+┌──────────────┐    ┌──────────────┐    ┌──────────────┐
+│ Destination  │    │  Itinerary   │    │    Hotel     │
+│    Agent     │    │    Agent     │    │    Agent     │
+└──────────────┘    └──────────────┘    └──────────────┘
+        │                   │                   │
+        └───────────────────┼───────────────────┘
+                            │
+                            ▼
+                    ┌──────────────┐
+                    │     LLM      │
+                    │   (Groq)     │
+                    └──────────────┘
+                            │
+        ┌───────────────────┼───────────────────┐
+        │                   │                   │
+        ▼                   ▼                   ▼
+┌──────────────┐    ┌──────────────┐    ┌──────────────┐
+│   Database   │    │  Maps API    │    │  Image API   │
+│   (MySQL)    │    │ (Nominatim)  │    │  (Pexels)    │
+└──────────────┘    └──────────────┘    └──────────────┘
+```
+
+### Agent Responsibilities
+
+| Agent | Purpose | LangChain Usage |
+|-------|---------|----------------|
+| **Destination Agent** | Research cities, culture, attractions | Structured output parsing, Context caching |
+| **Itinerary Agent** | Generate day-by-day plans | Chain of thought, Budget constraints |
+| **Hotel Agent** | Find accommodations | JSON schema validation, Filtering logic |
+| **Food Agent** | Discover restaurants | Cuisine classification, Dietary filtering |
+
+---
+
+## 🛠️ Tech Stack
+
+### Frontend & UI
+- **Streamlit** - Interactive web interface
+- **Plotly** - Data visualization and charts
+- **Custom CSS** - Enhanced UI/UX with gradients and animations
+- **HTML/Markdown** - Rich content rendering
+
+### Backend & AI
+- **LangChain** - LLM orchestration and prompt engineering
+- **Groq API** - Ultra-fast inference with Llama 3.3 70B
+- **Python 3.10+** - Core application logic
+
+### Data & Storage
+- **MySQL** - User data, trips, preferences
+- **Session State** - Real-time data management
+- **JSON** - Itinerary storage and data exchange
+
+### APIs & Services
+- **Nominatim (OpenStreetMap)** - Free geocoding (no API key)
+- **Google Maps** - Location links
+- **Pexels/Unsplash** - High-quality travel images
+- **Picsum Photos** - Fallback placeholder images
+
+### Document Generation
+- **ReportLab** - PDF generation
+- **Plotly** - Chart exports for PDFs
+- **Kaleido** - Static image rendering
+
+---
+
+## 📁 Project Structure
+```
+ai-trip-planner/
+│
+├── agents/                      # AI Agent modules
+│   ├── __init__.py
+│   ├── destination_agent.py     # Researches destinations
+│   ├── itinerary_agent.py       # Generates trip plans
+│   ├── hotel_agent.py           # Finds hotels
+│   └── food_agent.py            # Discovers restaurants
+│
+├── pages/                       # Streamlit pages
+│   ├── __init__.py
+│   ├── home.py                  # Landing page with destination search
+│   ├── plan_trip.py             # Trip planning interface
+│   ├── hotels.py                # Hotel search and filtering
+│   ├── foods.py                 # Restaurant discovery
+│   ├── itineraries.py           # Trip management & favorites
+│   ├── auth.py                  # Login/Signup
+│   └── profile.py               # User profile & preferences
+│
+├── components/                  # Reusable UI components
+│   ├── __init__.py
+│   ├── header.py                # Navigation header
+│   ├── cards.py                 # Card components
+│   └── sidebar.py               # Sidebar components
+│
+├── utils/                       # Utility functions
+│   ├── __init__.py
+│   ├── llm_handler.py           # LangChain + Groq integration
+│   ├── helpers.py               # General utilities
+│   ├── maps_handler.py          # Geocoding & maps
+│   ├── image_service.py         # Image fetching
+│   └── pdf_generator.py         # PDF export
+│
+├── config/                      # Configuration
+│   ├── __init__.py
+│   └── database.py              # MySQL connection
+│
+├── database/                    # Database models & queries
+│   ├── __init__.py
+│   ├── models.py                # Data models
+│   └── queries.py               # SQL operations
+│
+├── assets/                      # Static assets
+│   └── styles.css               # Custom CSS
+│
+├── .streamlit/                  # Streamlit config
+│   ├── config.toml              # App configuration
+│   └── secrets.toml             # API keys (not in git)
+│
+├── app.py                       # Main application entry
+├── requirements.txt             # Python dependencies
+├── .gitignore                   # Git ignore rules
+└── README.md                    # This file
+```
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- **Python 3.10+**
+- **MySQL 8.0+**
+- **Groq API Key** (free tier available)
+- **Pexels API Key** (optional, for images)
+- **Unsplash API Key** (optional, for images)
+
+### 1️⃣ Clone the Repository
+```bash
+git clone https://github.com/YOUR_USERNAME/ai-trip-planner.git
+cd ai-trip-planner
+```
+
+### 2️⃣ Create Virtual Environment
+
+**macOS / Linux**
+```bash
+python3 -m venv travel_venv
+source travel_venv/bin/activate
+```
+
+**Windows**
+```bash
+python -m venv travel_venv
+travel_venv\Scripts\activate
+```
+
+### 3️⃣ Install Dependencies
+```bash
+pip install -r requirements.txt
+```
+
+### 4️⃣ Set Up Database
+
+Create a MySQL database:
+```sql
+CREATE DATABASE ai_trip_planner;
+```
+
+Import the schema (create tables as defined in `database/models.py`):
+```sql
+-- Users table
+CREATE TABLE users (
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    full_name VARCHAR(100),
+    country VARCHAR(50),
+    mobile_number VARCHAR(20),
+    profile_image_url TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- User preferences table
+CREATE TABLE user_preferences (
+    preference_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    default_currency VARCHAR(10) DEFAULT 'USD',
+    preferred_trip_type TEXT,  -- JSON array for multiple types
+    preferred_food_type VARCHAR(50),
+    preferred_budget_range VARCHAR(50),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+-- Trips table
+CREATE TABLE trips (
+    trip_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    destination_city VARCHAR(100) NOT NULL,
+    destination_state VARCHAR(100),
+    destination_country VARCHAR(100) NOT NULL,
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    budget DECIMAL(10, 2),
+    currency VARCHAR(10),
+    trip_type VARCHAR(100),
+    food_preference VARCHAR(50),
+    num_people INT DEFAULT 1,
+    itinerary_json LONGTEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+-- Hotels table
+CREATE TABLE hotels (
+    hotel_id INT AUTO_INCREMENT PRIMARY KEY,
+    trip_id INT,
+    name VARCHAR(200) NOT NULL,
+    description TEXT,
+    location VARCHAR(200),
+    city VARCHAR(100),
+    country VARCHAR(100),
+    price_per_night DECIMAL(10, 2),
+    rating DECIMAL(3, 2),
+    image_url TEXT,
+    amenities TEXT,  -- JSON array
+    room_type VARCHAR(100),
+    latitude DECIMAL(10, 8),
+    longitude DECIMAL(11, 8),
+    maps_link TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (trip_id) REFERENCES trips(trip_id) ON DELETE CASCADE
+);
+
+-- Restaurants table
+CREATE TABLE restaurants (
+    restaurant_id INT AUTO_INCREMENT PRIMARY KEY,
+    trip_id INT,
+    name VARCHAR(200) NOT NULL,
+    description TEXT,
+    location VARCHAR(200),
+    city VARCHAR(100),
+    country VARCHAR(100),
+    cuisine_type VARCHAR(100),
+    food_type VARCHAR(50),
+    price_range VARCHAR(50),
+    rating DECIMAL(3, 2),
+    image_url TEXT,
+    popular_dishes TEXT,  -- JSON array
+    opening_hours VARCHAR(20),
+    closing_hours VARCHAR(20),
+    latitude DECIMAL(10, 8),
+    longitude DECIMAL(11, 8),
+    maps_link TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (trip_id) REFERENCES trips(trip_id) ON DELETE CASCADE
+);
+
+-- Destinations cache table
+CREATE TABLE destinations_cache (
+    cache_id INT AUTO_INCREMENT PRIMARY KEY,
+    city VARCHAR(100) NOT NULL,
+    country VARCHAR(100) NOT NULL,
+    description TEXT,
+    popular_places TEXT,  -- JSON array
+    culture_info TEXT,
+    local_language VARCHAR(100),
+    famous_foods TEXT,  -- JSON array
+    images_json TEXT,  -- JSON array
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_destination (city, country)
+);
+
+-- Favorite trips table
+CREATE TABLE favorite_trips (
+    favorite_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    trip_id INT,  -- NULL for popular trips
+    is_popular_trip BOOLEAN DEFAULT FALSE,
+    popular_trip_title VARCHAR(200),
+    popular_trip_destination VARCHAR(200),
+    popular_trip_data TEXT,  -- JSON for popular trip details
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (trip_id) REFERENCES trips(trip_id) ON DELETE CASCADE
+);
+
+-- Bookmarks table
+CREATE TABLE bookmarks (
+    bookmark_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    item_type ENUM('hotel', 'restaurant') NOT NULL,
+    item_name VARCHAR(200) NOT NULL,
+    item_location VARCHAR(200),
+    item_city VARCHAR(100),
+    item_country VARCHAR(100),
+    item_data TEXT,  -- JSON for full item details
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+```
+
+### 5️⃣ Configure Secrets
+
+Create `.streamlit/secrets.toml`:
+```toml
+# Database Configuration
+DB_HOST = "localhost"
+DB_USER = "your_mysql_user"
+DB_PASSWORD = "your_mysql_password"
+DB_NAME = "ai_trip_planner"
+
+# LLM API Keys
+GROQ_API_KEY = "your_groq_api_key"
+
+# Image APIs (Optional)
+PEXELS_API_KEY = "your_pexels_key"
+UNSPLASH_API_KEY = "your_unsplash_key"
+```
+
+**Get API Keys:**
+- **Groq**: https://console.groq.com/ (Free tier: 30 requests/min)
+- **Pexels**: https://www.pexels.com/api/ (Free: 200 requests/hour)
+- **Unsplash**: https://unsplash.com/developers (Free: 50 requests/hour)
+
+### 6️⃣ Run the Application
+```bash
+streamlit run app.py
+```
+
+The app will open at `http://localhost:8501`
+
+---
+
+## 🎯 Usage Guide
+
+### Step 1: Explore Destinations
+1. Go to **Home** page
+2. Enter a city and country (e.g., "Paris, France")
+3. View destination insights, attractions, and cuisine
+4. Click "Plan My Trip" to start planning
+
+### Step 2: Create Trip Itinerary
+1. Navigate to **Plan Trip**
+2. Enter trip details:
+   - Destination (city, country, state for India)
+   - Travel dates
+   - Budget and currency
+   - Number of travelers
+   - Trip types (multiple selections)
+   - Food preferences
+3. Click "Generate Itinerary"
+4. View day-by-day plan with:
+   - Activities with timings and costs
+   - Meals (breakfast, lunch, dinner)
+   - Accommodation recommendations
+   - Interactive analytics charts
+5. Export to PDF or save to your account
+
+### Step 3: Find Hotels
+1. Go to **Hotels** page
+2. Search by city and country
+3. Apply filters:
+   - Budget category
+   - Price range
+   - Star rating
+   - Room type
+   - Amenities (WiFi, Pool, Gym, etc.)
+   - AC preference
+4. View hotel cards with ratings and prices
+5. Bookmark favorites (requires login)
+6. Load more hotels for comprehensive search
+
+### Step 4: Discover Restaurants
+1. Navigate to **Foods** page
+2. Search by destination
+3. Filter by:
+   - Food types (Veg/Non-Veg/Vegan)
+   - Cuisine (Italian, Chinese, Local, etc.)
+   - Price range
+   - Rating
+   - Dietary restrictions
+   - Service types
+   - Ambiance
+4. Check opening hours
+5. Bookmark favorites
+
+### Step 5: Manage Trips
+1. Go to **Itineraries**
+2. View **Your Trips** tab for saved itineraries
+3. Browse **Popular Trips** for inspiration
+4. Check **Your Favorites** for hearted trips
+5. Access **Bookmarks** for saved hotels/restaurants
+6. Actions available:
+   - View details
+   - Modify trip
+   - Export PDF
+   - Add to favorites
+   - Delete trip
+
+### Step 6: Profile Management
+1. Click **Profile** in navigation
+2. View travel statistics
+3. Edit personal information
+4. Upload profile picture (file or URL)
+5. Update travel preferences
+6. Change password securely
+
+---
+
+## 🧠 LangChain Implementation Details
+
+### How LangChain Powers This Application
+
+#### 1. **LLM Initialization & Configuration**
+```python
+from groq import Groq
+
+class LLMHandler:
+    def __init__(self):
+        self.client = Groq(api_key=st.secrets["GROQ_API_KEY"])
+        self.model = "llama-3.3-70b-versatile"
+```
+
+#### 2. **Structured Output Generation**
+LangChain principles are used to enforce JSON schemas:
+```python
+def generate_json_response(self, prompt: str, system_message: str):
+    """
+    Generate JSON with strict schema enforcement
+    Uses prompt engineering + regex cleaning
+    """
+    response = self.client.chat.completions.create(
+        model=self.model,
+        messages=[
+            {"role": "system", "content": system_message},
+            {"role": "user", "content": prompt}
+        ],
+        temperature=0.5,
+        max_tokens=16000  # Large context for 30-day trips
+    )
+    
+    # Extract JSON from markdown code blocks
+    if "```json" in response:
+        json_str = response.split("```json")[1].split("```")[0].strip()
+    
+    # Regex cleaning for malformed JSON
+    json_str = re.sub(r',\s*}', '}', json_str)  # Remove trailing commas
+    
+    return json.loads(json_str)
+```
+
+#### 3. **Agent-Specific Prompts**
+
+**Destination Agent:**
+```python
+prompt = f"""
+Generate comprehensive information about {city}, {country}.
+Return ONLY a valid JSON object with this exact structure:
+{{
+    "description": "Brief 2-3 sentence description",
+    "popular_places": [...],
+    "culture": "Cultural insights",
+    "local_language": "Languages spoken",
+    "famous_foods": [...],
+    "best_time_to_visit": "Season recommendations",
+    "local_tips": "Traveler tips"
+}}
+"""
+```
+
+**Itinerary Agent:**
+```python
+prompt = f"""
+Create a {num_days}-day travel itinerary for {city}, {country}.
+
+TRIP DETAILS:
+- Budget: {budget} {currency} (total for {num_people} people)
+- Trip Types: {trip_types}
+- Food Preference: {food_preference}
+
+Return JSON with:
+{{
+    "trip_overview": "Summary",
+    "total_estimated_cost": float,
+    "daily_itinerary": [
+        {{
+            "day": 1,
+            "date": "{date}",
+            "title": "Day theme",
+            "summary": "2-3 sentence overview",
+            "activities": [...],
+            "meals": [...],
+            "accommodation": {{...}}
+        }}
+    ]
+}}
+
+CONSTRAINTS:
+- Respect budget: {budget} {currency}
+- Include all {num_days} days
+- Each day needs summary, 3-5 activities, 3 meals, accommodation
+"""
+```
+
+#### 4. **Context Management**
+```python
+# Session state preserves context across agents
+if 'destination_info' in st.session_state:
+    # Itinerary agent uses cached destination data
+    dest_info = st.session_state.destination_info
+    
+    # Pass to itinerary generation
+    itinerary = agent.generate_itinerary(
+        city=dest_info['city'],
+        attractions=dest_info['popular_places']
+    )
+```
+
+#### 5. **Error Handling & Retry Logic**
+```python
+try:
+    parsed = json.loads(json_str)
+    logger.info("Successfully parsed JSON")
+    return parsed
+except json.JSONDecodeError as e:
+    # Retry with cleaning
+    json_str = re.sub(r',\s*}', '}', json_str)
+    parsed = json.loads(json_str)
+    return parsed
+```
+
+#### 6. **Token Optimization**
+```python
+# Dynamic token allocation based on trip length
+estimated_tokens = max(8000, num_days * 600)  # 600 tokens per day
+max_tokens = min(16000, estimated_tokens)  # Cap at model limit
+
+response = self.generate_response(
+    prompt=prompt,
+    max_tokens=max_tokens
+)
+```
+
+---
+
+## 🎨 UI/UX Features
+
+### Visual Design
+- **Gradient Backgrounds** - Modern purple-blue color scheme
+- **Card Layouts** - Clean, organized information display
+- **Responsive Design** - Works on desktop and mobile
+- **Smooth Animations** - Hover effects and transitions
+- **Custom CSS** - Professional styling with `assets/styles.css`
+
+### Interactive Elements
+- **Expandable Day Cards** - Show/hide detailed itineraries
+- **Filter Panels** - Sticky sidebar for hotel/restaurant filtering
+- **Loading Indicators** - Spinners with progress messages
+- **Success/Error Toasts** - User feedback for actions
+- **Balloons Animation** - Celebration on account creation
+
+### Data Visualization
+- **Plotly Charts**:
+  - Stacked bar charts for daily expenses
+  - Pie charts for time distribution
+  - Horizontal bar charts for category totals
+- **Interactive Tooltips** - Hover for detailed information
+- **Responsive Sizing** - Charts adapt to screen width
+
+---
+
+## 🔐 Security & Privacy
+
+### Authentication
+- **Password Hashing** - SHA-256 encryption
+- **Email Validation** - Regex pattern matching
+- **Username Uniqueness** - Database constraints
+- **Password Strength** - Minimum 8 characters
+
+### Data Protection
+- **SQL Injection Prevention** - Parameterized queries
+- **XSS Protection** - HTML escaping in user inputs
+- **Session Management** - Streamlit session state
+- **API Key Security** - Secrets stored in `.streamlit/secrets.toml`
+
+### Privacy Features
+- **Optional Mobile Numbers** - Can be duplicate or omitted
+- **Profile Image Compression** - Reduces data size
+- **User Data Isolation** - Foreign key constraints
+- **Cascade Deletion** - Removes user data on account deletion
+
+---
+
+## 📊 Database Schema
+
+### Entity Relationship
+```
+users (1) ──── (N) trips
+  │                  │
+  │                  ├── (N) hotels
+  │                  └── (N) restaurants
+  │
+  ├── (1) user_preferences
+  ├── (N) favorite_trips
+  └── (N) bookmarks
+
+destinations_cache (independent)
+```
+
+### Key Tables
+- **users** - Authentication and profile data
+- **trips** - Trip itineraries with JSON storage
+- **hotels** - Hotel recommendations
+- **restaurants** - Restaurant suggestions
+- **favorite_trips** - User favorites (saved + popular)
+- **bookmarks** - Hotel and restaurant bookmarks
+- **destinations_cache** - Cached destination research
+
+---
+
+## 🚧 Advanced Features
+
+### 1. **Duplicate Trip Prevention**
+```python
+def _check_duplicate_trip(self, user_id, city, state, country, 
+                          num_days, budget, num_people):
+    """
+    Validates unique trips based on:
+    - Destination (city, state, country)
+    - Duration (number of days)
+    - Budget (±10% tolerance)
+    - Group size (num_people)
+    """
+    budget_min = budget * 0.9
+    budget_max = budget * 1.1
+    
+    query = """
+        SELECT trip_id FROM trips 
+        WHERE user_id = %s AND destination_city = %s 
+        AND DATEDIFF(end_date, start_date) + 1 = %s
+        AND budget BETWEEN %s AND %s
+        AND num_people = %s
+    """
+```
+
+### 2. **Smart Pagination**
+```python
+# Dynamic limits based on city size
+major_cities = ["delhi", "mumbai", "new york", ...]
+is_major_city = city.lower() in major_cities
+max_limit = 30 if is_major_city else 20
+
+# Load more button
+if st.session_state.hotels_total_loaded < max_limit:
+    if st.button("Load More Hotels (Generate 5 new)"):
+        # Generate 5 additional hotels
+        new_hotels = agent.find_hotels(num_results=5)
+        st.session_state.hotels_list.extend(new_hotels)
+```
+
+### 3. **Multi-Select Trip Types**
+```python
+# Support multiple trip types in a single itinerary
+trip_types = st.multiselect(
+    "Trip Type(s)",
+    options=["Adventure", "Relaxation", "Cultural", ...],
+    default=["Adventure"]
+)
+
+# Store as JSON array
+trip_types_json = json.dumps(trip_types)
+```
+
+### 4. **Profile Image Upload**
+```python
+def convert_image_to_url(uploaded_file):
+    """
+    Convert uploaded image to base64 data URL
+    - Resize to max 800x800
+    - Compress as JPEG with 85% quality
+    - Warn if > 500KB
+    """
+    image = Image.open(uploaded_file)
+    image.thumbnail((800, 800), Image.Resampling.LANCZOS)
+    
+    buffered = BytesIO()
+    image.save(buffered, format="JPEG", quality=85, optimize=True)
+    
+    base64_encoded = base64.b64encode(buffered.getvalue()).decode()
+    return f"data:image/jpeg;base64,{base64_encoded}"
+```
+
+### 5. **PDF Generation with Charts**
+```python
+def generate_trip_pdf(trip_data, itinerary):
+    """
+    Creates professional PDF with:
+    - Trip overview table
+    - Analytics charts (Plotly → PNG via Kaleido)
+    - Day-by-day itinerary
+    - Activities, meals, accommodation
+    - Grand total calculations
+    """
+    # Generate expense chart
+    expense_chart_img = _create_expense_chart_image(itinerary)
+    
+    # Add to PDF
+    elements.append(Image(expense_chart_img, width=5.5*inch))
+```
+
+---
+
+## 💡 Use Cases
+
+### For Travelers
+- 🌍 **Solo Travelers** - Personalized itineraries with safety tips
+- 👨‍👩‍👧‍👦 **Family Trips** - Kid-friendly activities and restaurants
+- 💑 **Honeymoon Planning** - Romantic destinations and experiences
+- 🎒 **Backpackers** - Budget-conscious recommendations
+- 🍽️ **Food Enthusiasts** - Culinary-focused trip planning
+
+### For Travel Agencies
+- 📋 **Quick Proposals** - Generate client itineraries in seconds
+- 💼 **Corporate Travel** - Business trip planning
+- 🏢 **Group Tours** - Multi-traveler budgeting
+- 📊 **Analytics** - Budget breakdowns for clients
+
+### For Students/Researchers
+- 🎓 **Study AI Agents** - Multi-agent architecture example
+- 🧪 **LangChain Projects** - Practical LLM integration
+- 📚 **Database Design** - Normalized schema reference
+- 🎨 **UI/UX Patterns** - Streamlit best practices
+
+---
+
+## 🐛 Known Limitations
+
+1. **LLM Accuracy** - AI may occasionally generate non-existent hotels/restaurants
+2. **Image Loading** - External image URLs may fail; fallback placeholders used
+3. **Geocoding Rate Limits** - Nominatim allows 1 request/second
+4. **PDF Chart Rendering** - Requires Kaleido package (may fail without it)
+5. **Mobile Responsiveness** - Best experienced on desktop (1920x1080+)
+
+---
+
+## 👨‍💻 Author
+
+**Aditya Raj**  
+Computer Engineering Student  
+Passionate about: Generative AI, Multi-Agent Systems, LangChain, Applied ML
+
+📧 Email: your.email@example.com  
+🔗 LinkedIn: [Your Profile](https://linkedin.com/in/yourprofile)  
+🐙 GitHub: [Your Username](https://github.com/yourusername)
+
+---
+
+## ⭐ Star This Project
+
+If you found this project helpful, please give it a ⭐ on GitHub!
+
+It helps others discover this work and motivates continued development.
+
+---
+
+**Built with ❤️ using Python, LangChain, and Streamlit**
